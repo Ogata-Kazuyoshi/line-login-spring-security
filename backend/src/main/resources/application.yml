@@ -6,23 +6,31 @@ spring:
           line22:
             client-id: 2004131491
             client-secret: ${LINE_SECRET_ID}
-            authorization-grant-type: "authorization_code"
-            redirect-uri: "http://localhost:8080/login/oauth2/code/line"
-            client-authentication-method: 'client_secret_post'
+            authorization-grant-type: 'authorization_code'
+            redirect-uri: 'http://localhost:8080/login/oauth2/code/line'
+            #            client-authentication-method: 'client_secret_post'
             scope:
-#              - "openid"
-              - "profile"
+#              - openid
+              - profile
+#            clientName: Line
         provider:
           line22:
-            authorization-uri: "https://access.line.me/oauth2/v2.1/authorize"
-            user-info-uri: "https://api.line.me/v2/profile"
-            token-uri: "https://api.line.me/oauth2/v2.1/token"
+            authorization-uri: 'https://access.line.me/oauth2/v2.1/authorize'
+            token-uri: 'https://api.line.me/oauth2/v2.1/token'
+#            jwk-set-uri: 'https://api.line.me/oauth2/v2.1/verify'
+#            user-info-uri: 'https://api.line.me/oauth2/v2.1/userinfo'
+            user-info-uri: "https://api.line.me/v2/profile" # LINEのユーザー情報エンドポイント
+#            user-name-attribute: 'name'
             user-name-attribute: "userId"
 
-environments:
-  auth-provider-redirect-url: "/oauth2/authorization/line22"
-  after-auth-redirect-url: "http://localhost:5173/mypage"
 
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2.client: DEBUG
+
+environments:
+  auth-provider-redirect-url: '/oauth2/authorization/line22'
+  after-auth-redirect-url: 'http://localhost:5173/mypage'
 #registration/ provider/ auth-provider-redirect-url?????????????????????????????????????????????????
 #????????????JSESSIONID?LINE???????????Spring Security???????????
-

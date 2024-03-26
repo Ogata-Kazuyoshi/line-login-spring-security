@@ -13,7 +13,7 @@ class CustomOAuth2UserImpl(
 //    private val authorities: Collection<GrantedAuthority>,
     private val userId: String,
     private val sub: String,
-    private val name: String,
+    private val name: String?,
 ) : OAuth2User, CustomOAuth2User {
     private val attributes: Map<String, Any>
 
@@ -29,7 +29,7 @@ class CustomOAuth2UserImpl(
         return sub
     }
 
-    override fun getName(): String {
+    override fun getName(): String? {
         return name
     }
 
