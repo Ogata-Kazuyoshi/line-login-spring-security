@@ -23,6 +23,9 @@ class CustomOAuth2SuccessHandler(
         response: HttpServletResponse?,
         authentication: Authentication?,
     ) {
+        //認証成功時に自動でonAuthenticationSuccessメソッドの中身が実行される
+        //認証成功＝application.ymlに記載しているuser-info-uriまで問い合わせ終了でUser情報はすでに持っている
+        // authorize -> アクセスtoken発行 -> profileでUser情報を取得
         println("userInfo : " + authentication)
         if (authentication is OAuth2AuthenticationToken) {
             val principal = authentication.principal as OAuth2User
