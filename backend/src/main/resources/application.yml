@@ -4,7 +4,7 @@ spring:
       client:
         registration:
           line22:
-            client-id: 2004131491
+            client-id: ${LINE_CLIENT_ID}
             client-secret: ${LINE_SECRET_ID}
             authorization-grant-type: 'authorization_code'
             redirect-uri: 'http://localhost:8080/login/oauth2/code/line'
