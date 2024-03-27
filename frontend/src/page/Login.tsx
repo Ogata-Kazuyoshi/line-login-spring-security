@@ -1,7 +1,7 @@
 export const Login = () => {
 
     const handleLogin = (provider:string) => {
-        window.location.href = `http://localhost:8080/login/oauth2/code/${provider}`
+        window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`
     }
 
     return <>

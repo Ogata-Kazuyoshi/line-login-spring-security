@@ -1,42 +1,76 @@
+#spring:
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          line:
+#            client-id: ${LINE_CLIENT_ID}
+#            client-secret: ${LINE_SECRET_ID}
+#            authorization-grant-type: 'authorization_code'
+#            redirect-uri: 'http://localhost:8080/login/oauth2/code/line'
+##            redirect-uri: "{baseUrl}/api/login/oauth2/code/line"
+#            scope:
+##              - openid
+#              - profile
+#          github:
+#            client-id: ${GITHUB_CLIENT_ID}
+#            client-secret: ${GITHUB_SECRET_ID}
+#            redirect-uri: http://localhost:8080/login/oauth2/code/github
+##            redirect-uri: "{baseUrl}/api/login/oauth2/code/github"
+#            scope:
+#              - read:user
+#        provider:
+#          line:
+#            authorization-uri: https://access.line.me/oauth2/v2.1/authorize
+#            token-uri: https://api.line.me/oauth2/v2.1/token
+#            user-info-uri: https://api.line.me/v2/profile # LINEのユーザー情報エンドポイント
+#            user-name-attribute: userId
+##          github:
+##            authorization-uri: https://github.com/login/oauth/authorize
+##            token-uri: https://github.com/login/oauth/access_token
+##            user-info-uri: https://api.github.com/user
+#
+#
+#logging:
+#  level:
+#    org.springframework.security: DEBUG
+#    org.springframework.security.oauth2.client: DEBUG
+#
+#environments:
+##  auth-provider-redirect-url: '/oauth2/authorization/line'
+#  auth-provider-redirect-url: '/oauth2/authorization/github'
+#  after-auth-redirect-url: 'http://localhost:5173/mypage'
+##registration/ provider/ auth-provider-redirect-urlの各変数名を合わせておくこと。これがあっているとなんでもOK
+##JSESSIONIDはLINEデベロッパーが生成はしていない。Spring Securityがセッション管理のために自動で生成してFrontに返却してくれている
+
+
+
 spring:
   security:
     oauth2:
       client:
         registration:
-          line22:
-            client-id: ${LINE_CLIENT_ID}
-            client-secret: ${LINE_SECRET_ID}
-            authorization-grant-type: 'authorization_code'
-            redirect-uri: 'http://localhost:8080/login/oauth2/code/line'
-            scope:
-#              - openid
-              - profile
           github:
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_SECRET_ID}
-            redirect-uri: http://localhost:8080/login/oauth2/code/github
-            scope:
-              - read:user
+            clientId: ${GITHUB_CLIENT_ID}
+            clientSecret: ${GITHUB_SECRET_ID}
+            scope: read:user
+          line:
+            clientId: ${LINE_CLIENT_ID}
+            clientSecret: ${LINE_SECRET_ID}
+            authorizationGrantType: authorization_code
+            redirectUri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: profile
         provider:
-          line22:
-            authorization-uri: https://access.line.me/oauth2/v2.1/authorize
-            token-uri: https://api.line.me/oauth2/v2.1/token
-            user-info-uri: https://api.line.me/v2/profile # LINEのユーザー情報エンドポイント
-            user-name-attribute: userId
-          github:
-            authorization-uri: https://github.com/login/oauth/authorize
-            token-uri: https://github.com/login/oauth/access_token
-            user-info-uri: https://api.github.com/user
+          line:
+            authorizationUri: https://access.line.me/oauth2/v2.1/authorize
+            tokenUri: https://api.line.me/oauth2/v2.1/token
+            userInfoUri: https://api.line.me/v2/profile
+            userNameAttribute: userId
+#          github:
+#            authorization-uri: https://github.com/login/oauth/authorize
+#            token-uri: https://github.com/login/oauth/access_token
+#            user-info-uri: https://api.github.com/user
+#githubは共通のOAuthプロバイダとして、SpringBootが認識するので、登録不要
 
 
-logging:
-  level:
-    org.springframework.security: DEBUG
-    org.springframework.security.oauth2.client: DEBUG
-
-environments:
-#  auth-provider-redirect-url: '/oauth2/authorization/line22'
-  auth-provider-redirect-url: '/oauth2/authorization/github'
-  after-auth-redirect-url: 'http://localhost:5173/mypage'
-#registration/ provider/ auth-provider-redirect-urlの各変数名を合わせておくこと。これがあっているとなんでもOK
-#JSESSIONIDはLINEデベロッパーが生成はしていない。Spring Securityがセッション管理のために自動で生成してFrontに返却してくれている
+#Frontendから叩く場合は、/oauth2/authorization/{registrationId}がバックエンドの認証フローをスタートさせるトリガー
