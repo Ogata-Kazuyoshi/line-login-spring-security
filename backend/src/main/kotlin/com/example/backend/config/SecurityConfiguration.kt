@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler
 
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -17,6 +18,16 @@ class SecurityConfiguration(
 
     @Value("\${environments.auth-provider-redirect-url}")
     lateinit var authenticationProviderRedirectUrl: String
+
+//    @Bean
+//    fun authenticationSuccessHandler(): AuthenticationSuccessHandler {
+//        return ExpoDefaultAuthenticationSuccessHandler(
+//            listOf(
+//                AadAuthenticationSuccessHandler(userService),
+//                LineAuthenticationSuccessHandler(userService)
+//            )
+//        )
+//    }
 
 
     @Bean

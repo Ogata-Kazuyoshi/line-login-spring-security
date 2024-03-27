@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController
 class AuthController {
     @GetMapping("/check-auth")
     fun checkAuth (
-        @AuthenticationPrincipal user: CustomOAuth2User,
+//        @AuthenticationPrincipal user: CustomOAuth2User,
     ) {
-        println("userId : " + user.getSub())
-        println("checkAuthが叩かれました")
+//        println("userId : " + user.getSub())
+//        println("checkAuthが叩かれました")
     }
 
 }
