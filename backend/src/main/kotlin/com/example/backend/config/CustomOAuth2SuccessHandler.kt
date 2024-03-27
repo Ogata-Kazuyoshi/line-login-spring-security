@@ -5,10 +5,7 @@ package com.example.backend.config
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
-import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
 import org.springframework.stereotype.Component
 
@@ -52,11 +49,28 @@ class CustomOAuth2SuccessHandler(
 //                SecurityContextHolder.getContext().authentication = newAuthentication
 //
 //    //            response?.sendRedirect("\${environments.after-auth-redirect-url}")
-                response?.sendRedirect("http://localhost:5173/mypage")
-//            } else {
-//                throw Error("!!! user info endpoint is not work. !!!")
-//            }
-//        }
+
+//        val principal = authentication?.principal as OAuth2User
+//        val oAuth2AuthenticationToken = authentication as OAuth2AuthenticationToken
+//        val userId = "hogehoge"
+//        val oid = principal.getAttribute<String>("userId") ?: throw Exception("There is no userId")
+//        val displayName = principal.getAttribute<String>("displayName") ?: throw Exception("There is no name")
+//        val newAuthentication = OAuth2AuthenticationToken(
+//            CustomOAuth2UserImpl(
+//                userId = userId,
+//                oid = oid,
+//                name = displayName,
+////                authorities = principal.authorities,
+//            ),
+//            authentication.authorities,
+//            oAuth2AuthenticationToken.authorizedClientRegistrationId
+//        )
+//        SecurityContextHolder.getContext().authentication = newAuthentication
+//        response?.sendRedirect("http://localhost:5173/mypage")
+////            } else {
+////                throw Error("!!! user info endpoint is not work. !!!")
+////            }
+////        }
 
     }
 }

@@ -1,6 +1,6 @@
 package com.example.backend.controller
 
-import com.example.backend.config.CustomOAuth2User
+import com.example.backend.config.model.CustomOAuth2User
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RestController
 class AuthController {
     @GetMapping("/check-auth")
     fun checkAuth (
-//        @AuthenticationPrincipal user: CustomOAuth2User,
+        @AuthenticationPrincipal user: CustomOAuth2User,
     ) {
-//        println("userId : " + user.getSub())
-//        println("checkAuthが叩かれました")
+        println("userId : " + user.getAttribute("oid"))
+        println("checkAuthが叩かれました")
     }
 
 }

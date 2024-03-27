@@ -97,9 +97,14 @@ class SecurityConfiguration {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .authorizeHttpRequests { it.anyRequest().authenticated() }
-            .oauth2Login { oauth2Login ->
-                oauth2Login.successHandler(authenticationSuccessHandler())
+            .authorizeHttpRequests {
+                it.requestMatchers("/api/**")
+                    .authenticated()
+                it.anyRequest()
+                    .permitAll()
+            }
+            .oauth2Login {
+                it.successHandler(authenticationSuccessHandler())
             }
         return http.build()
     }

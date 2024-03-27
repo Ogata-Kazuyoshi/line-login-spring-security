@@ -7,10 +7,10 @@ export const Mypage = () => {
     const handleCheckAuth = async () => {
         try{
             const res = await axios.get("/api/auth/check-auth")
-            console.log("res : ",res)
+            const url = new URL(res.request.responseURL);
+            if (url.pathname === "/login") navigate("/login")
         }catch (err) {
-            console.log("err : ",err)
-            navigate("/login")
+            throw Error(`error : ${err}`)
         }
     }
 
