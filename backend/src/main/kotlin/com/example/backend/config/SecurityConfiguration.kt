@@ -1,95 +1,31 @@
-//package com.example.backend.config
-//
-//import com.example.backend.config.handler.AppCustomeAuthenticationSuccessHandler
-//import com.example.backend.config.handler.LineAuthenticationSuccessHandler
-//import org.springframework.beans.factory.annotation.Value
-//import org.springframework.context.annotation.Bean
-//import org.springframework.context.annotation.Configuration
-//import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
-//import org.springframework.security.config.annotation.web.builders.HttpSecurity
-//import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-//import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver
-//import org.springframework.security.web.SecurityFilterChain
-//import org.springframework.security.web.authentication.AuthenticationSuccessHandler
-//
-//@EnableWebSecurity
-//@EnableMethodSecurity(prePostEnabled = true)
-//@Configuration
-//class SecurityConfiguration(
-////    val successHandler: CustomOAuth2SuccessHandler
-//) {
-////
-////    @Value("\${environments.auth-provider-redirect-url}")
-////    lateinit var authenticationProviderRedirectUrl: String
-//
-//    @Bean
-//    fun authenticationSuccessHandler(): AuthenticationSuccessHandler {
-//        return AppCustomeAuthenticationSuccessHandler(
-//            listOf(
-//                LineAuthenticationSuccessHandler()
-//            )
-//        )
-//    }
-//
-//
-//    @Bean
-//    fun filterChain(http: HttpSecurity): SecurityFilterChain {
-//        http
-//            .authorizeHttpRequests {
-////                it.requestMatchers("/api/**")
-////                    .authenticated()
-//                it.anyRequest()
-//                    .permitAll()
-//            }
-//            .oauth2Login {
-//                it.loginPage(this.authenticationProviderRedirectUrl) // 認証プロバイダへのリダイレクト先を設定
-//                it.successHandler(authenticationSuccessHandler())
-////                it.failureHandler { _, response, exception ->
-////                    response?.sendRedirect("/?error=${exception.message}")
-////                }
-////                it.redirectionEndpoint { configurer ->
-////                    configurer.baseUri("/api/login/oauth2/code/line")
-////                }
-////                it.authorizationEndpoint {
-////                    it.authorizationRequestResolver(OAuth2AuthorizationRequestResolver { request ->
-////                        // ここにOAuth2AuthorizationRequestResolverの実装を記述
-////                        // 例: OAuth2AuthorizationRequestをカスタマイズする
-////                    })
-////                }
-//            }
-//
-//        http.csrf {
-//            it.disable()// H2DBデバッグ用
-//        }
-//        return http.build()
-//    }
-//}
-//
-
-
-
 package com.example.backend.config
 
 import com.example.backend.config.handler.AppCustomeAuthenticationSuccessHandler
 import com.example.backend.config.handler.GithubAuthenticationSuccessHandler
 import com.example.backend.config.handler.LineAuthenticationSuccessHandler
+import com.example.backend.service.UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
+import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher
+import org.springframework.web.servlet.handler.HandlerMappingIntrospector
 
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 @Configuration
-class SecurityConfiguration {
-
+class SecurityConfiguration (
+    val userService: UserService
+) {
     @Bean
     fun authenticationSuccessHandler(): AuthenticationSuccessHandler {
         return AppCustomeAuthenticationSuccessHandler(
             listOf(
-                LineAuthenticationSuccessHandler(),
-                GithubAuthenticationSuccessHandler()
+                LineAuthenticationSuccessHandler(userService),
+                GithubAuthenticationSuccessHandler(userService)
             )
         )
     }
@@ -97,6 +33,7 @@ class SecurityConfiguration {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
+            .csrf().disable()
             .authorizeHttpRequests {
                 it.requestMatchers("/api/**")
                     .authenticated()

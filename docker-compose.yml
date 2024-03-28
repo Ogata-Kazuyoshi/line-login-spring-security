@@ -1,0 +1,16 @@
+services:
+  spring-security-login:
+    image: postgres:15.3
+    container_name: spring-security-login
+    restart: always
+    ports:
+      - 5435:5432
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=spring-security
+    volumes:
+      - spring-security-login:/var/lib/postgresql
+
+volumes:
+  spring-security-login:

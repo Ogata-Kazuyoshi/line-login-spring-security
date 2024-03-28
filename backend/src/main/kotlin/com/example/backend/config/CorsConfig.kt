@@ -13,7 +13,7 @@ class CorsConfig {
             override fun addCorsMappings(registry: CorsRegistry) {
                 registry
                     .addMapping("/**")
-                        .allowedOrigins("http://localhost:5173")
+                        .allowedOrigins("http://localhost:5173/")
 //                    .allowedOrigins("https://digcanvas.dev.dig.toyota")
                     .allowedMethods("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
             }
