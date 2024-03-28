@@ -8,7 +8,7 @@ export const Mypage = () => {
         try{
             const res = await axios.get("/api/auth/check-auth")
             const url = new URL(res.request.responseURL);
-            if (url.pathname === "/login") navigate("/login")
+            if (url.pathname === "/login") navigate("/front-login")
         }catch (err) {
             throw Error(`error : ${err}`)
         }
