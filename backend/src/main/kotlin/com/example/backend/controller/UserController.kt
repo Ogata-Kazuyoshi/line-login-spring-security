@@ -1,6 +1,6 @@
 package com.example.backend.controller
 
-import com.example.backend.config.model.CustomOAuth2User
+import com.example.backend.auth.model.CustomOAuth2User
 import com.example.backend.model.request.RequestUpdateUser
 import com.example.backend.model.response.ResponceUserInfo
 import com.example.backend.service.UserService

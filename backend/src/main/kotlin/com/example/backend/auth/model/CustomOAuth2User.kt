@@ -1,10 +1,7 @@
-package com.example.backend.config.model
+package com.example.backend.auth.model
 
-import org.springframework.security.core.AuthenticatedPrincipal
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.oauth2.core.user.OAuth2User
-import java.io.Serializable
-import java.util.UUID
 
 
 class CustomOAuth2User(

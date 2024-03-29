@@ -1,4 +1,4 @@
-package com.example.backend.config.handler
+package com.example.backend.auth.handler.common
 
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

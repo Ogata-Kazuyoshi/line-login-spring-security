@@ -1,8 +1,8 @@
-package com.example.backend.config
+package com.example.backend.auth.config
 
-import com.example.backend.config.handler.AppCustomeAuthenticationSuccessHandler
-import com.example.backend.config.handler.GithubAuthenticationSuccessHandler
-import com.example.backend.config.handler.LineAuthenticationSuccessHandler
+import com.example.backend.auth.handler.common.AppCustomeAuthenticationSuccessHandler
+import com.example.backend.auth.handler.provider.GithubAuthenticationSuccessHandler
+import com.example.backend.auth.handler.provider.LineAuthenticationSuccessHandler
 import com.example.backend.service.UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -11,8 +11,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector
 
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)

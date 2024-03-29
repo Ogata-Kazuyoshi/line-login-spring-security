@@ -10,6 +10,7 @@
 - [コードの説明](#コードの説明)
   - [applicaton.yml](#applicaton.yml)
   - [SecurityConfiguration.kt](#SecurityConfiguration.kt)
+  - [CommonAuthenticationSuccessHandler.kt](#CommonAuthenticationSuccessHandler.kt)
   - [LineAuthenticationSuccessHandler.kt](#LineAuthenticationSuccessHandler.kt)
   - [CustomOAuth2User.kt](#CustomOAuth2User.kt)
   - [AuthController.kt](#AuthController.kt)
@@ -145,11 +146,11 @@ spring:
 - requestMatchers().authentificated()で登録されているエンドポイントは認証されているかのチェックが入る。@AuthenticationPrincipalを使ってUser情報を取りたい場合は、このエンドポイント内にないとだめ
 
 ```kotlin
-package com.example.backend.config
+package com.example.backend.auth.config
 
-import com.example.backend.config.handler.AppCustomeAuthenticationSuccessHandler
-import com.example.backend.config.handler.GithubAuthenticationSuccessHandler
-import com.example.backend.config.handler.LineAuthenticationSuccessHandler
+import com.example.backend.auth.handler.common.AppCustomeAuthenticationSuccessHandler
+import com.example.backend.auth.handler.provider.GithubAuthenticationSuccessHandler
+import com.example.backend.auth.handler.provider.LineAuthenticationSuccessHandler
 import com.example.backend.service.UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -158,40 +159,38 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector
 
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 @Configuration
 class SecurityConfiguration (
-    val userService: UserService
+  val userService: UserService
 ) {
-    @Bean
-    fun authenticationSuccessHandler(): AuthenticationSuccessHandler {
-        return AppCustomeAuthenticationSuccessHandler(
-            listOf(
-                LineAuthenticationSuccessHandler(userService),
-                GithubAuthenticationSuccessHandler(userService)
-            )
-        )
-    }
+  @Bean
+  fun authenticationSuccessHandler(): AuthenticationSuccessHandler {
+    return AppCustomeAuthenticationSuccessHandler(
+      listOf(
+        LineAuthenticationSuccessHandler(userService),
+        GithubAuthenticationSuccessHandler(userService)
+      )
+    )
+  }
 
-    @Bean
-    fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        http
-            .csrf().disable()
-            .authorizeHttpRequests {
-                it.requestMatchers("/api/**")
-                    .authenticated()
-                it.anyRequest()
-                    .permitAll()
-            }
-            .oauth2Login {
-                it.successHandler(authenticationSuccessHandler())
-            }
-        return http.build()
-    }
+  @Bean
+  fun filterChain(http: HttpSecurity): SecurityFilterChain {
+    http
+      .csrf().disable()
+      .authorizeHttpRequests {
+        it.requestMatchers("/api/**")
+          .authenticated()
+        it.anyRequest()
+          .permitAll()
+      }
+      .oauth2Login {
+        it.successHandler(authenticationSuccessHandler())
+      }
+    return http.build()
+  }
 }
 
 ```
@@ -199,21 +198,18 @@ class SecurityConfiguration (
 </details>
 
 <details>
-<summary> 3. LineAuthenticationSuccessHandler.kt </summary>
+<summary> 3. CommonAuthenticationSuccessHandler.kt </summary>
 
-- 認証成功時に、どのサクセスハンドラーを使用するかを決定するために、各サクセスハンドラーのsupportsメソッドをAppAuthentication SuccessHandlerが呼ぶ
-- 下記のコードは、ResistrationIdがlineの場合はこのハンドラーが実行される
-- SuccessHandlerが呼ばれた時点でauthenticationにUser情報は既に入っているのでアクセスできる
-- idPによって、User情報のキーが異なるため、principalの値をターミナルに出してみて、どうすれば取れるかをチェックしながら進める
-- Lineの場合はuserIdが一意のユーザーキーになる
-- SecurityContextHolder.getContext().authenticationで@AuthenticationPrincipalで各コントローラーでuserが取れるように格納する
-- 全ての処理が終わると、フロントエンドの適切なパスにリダイレクトさせる
+- 各プロバイダーによらず、共通で処理したい部分を記載する。各プロバイダのクラスに継承をして欲しいので、"abstract"の抽象クラスにしている
+- 認証成功時に、どのサクセスハンドラーを使用するかを決定するために、各サクセスハンドラーのsupportsメソッドをAppAuthentication SuccessHandlerが呼ぶ。lineやgithubを決める
+- getOidやgetDisplayNameなど各プロバイダごとでアクセスするキーが変わるものは abstract関数にしておいて、継承先でのoverrideを強制する
+- 認証プロセス終了時に自動で、①supporsメソッド→②onAuthenticationSuccessが呼ばれる
+
 
 ```kotlin
-package com.example.backend.config.handler
+package com.example.backend.auth.handler.common
 
-
-import com.example.backend.config.model.CustomOAuth2User
+import com.example.backend.auth.model.CustomOAuth2User
 import com.example.backend.service.UserService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -222,12 +218,13 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.core.user.OAuth2User
 
-open class LineAuthenticationSuccessHandler(
-  val userService: UserService
+abstract class CommonAuthenticationSuccessHandler(
+  private val userService: UserService,
+  private val clientRegistrationId: String
 ) : AppAuthenticationSuccessHandler {
 
   override fun supports(oauth2Authentication: OAuth2AuthenticationToken): Boolean {
-    return "line" == oauth2Authentication.authorizedClientRegistrationId
+    return clientRegistrationId == oauth2Authentication.authorizedClientRegistrationId
   }
 
   override fun onAuthenticationSuccess(
@@ -237,9 +234,9 @@ open class LineAuthenticationSuccessHandler(
   ) {
     val principal = authentication.principal as OAuth2User
     val oAuth2AuthenticationToken = authentication as OAuth2AuthenticationToken
-    val oid = principal.getAttribute<String>("userId") ?: throw Exception("There is no userId")
-    val displayName = principal.getAttribute<String>("displayName") ?: throw Exception("There is no name")
-    val res = userService.getOrCreateUserService(oid=oid, name = displayName)
+    val oid = getOid(principal)
+    val displayName = getDisplayName(principal)
+    val res = userService.getOrCreateUserService(oid = oid, name = displayName)
     val newAuthentication = OAuth2AuthenticationToken(
       CustomOAuth2User(
         userId = res.id.toString(),
@@ -254,18 +251,43 @@ open class LineAuthenticationSuccessHandler(
     val redirectUrl = System.getenv("AFTER_AUTH_REDIRECT_URL") ?: "hogehoge"
     response.sendRedirect(redirectUrl)
   }
+
+  abstract fun getOid(principal: OAuth2User): String
+  abstract fun getDisplayName(principal: OAuth2User): String
 }
 ```
 
 </details>
 
 <details>
-<summary> 4. CustomOAuth2User.kt </summary>
+<summary> 4. LineAuthenticationSuccessHandler.kt </summary>
+
+- 共通部分を持てるように、CommonAuthenticationSuccessHandlerクラスを継承する
+- getOidや、getDisplanNameなど各プロバイダでアクセスするキーが異なる部分をこのクラスが担う。
+
+
+```kotlin
+package com.example.backend.auth.handler.provider
+
+import com.example.backend.auth.handler.common.CommonAuthenticationSuccessHandler
+import com.example.backend.service.UserService
+import org.springframework.security.oauth2.core.user.OAuth2User
+
+class LineAuthenticationSuccessHandler(userService: UserService) : CommonAuthenticationSuccessHandler(userService, "line") {
+  override fun getOid(principal: OAuth2User): String = principal.getAttribute<String>("userId") ?: throw Exception("There is no userId")
+  override fun getDisplayName(principal: OAuth2User): String = principal.getAttribute<String>("displayName") ?: throw Exception("There is no name")
+}
+```
+
+</details>
+
+<details>
+<summary> 5. CustomOAuth2User.kt </summary>
 
 - attributesのところで、どのキーをPrincipalとして登録するかを定義する。増やしたい場合は増やせる
 
 ```kotlin
-package com.example.backend.config.model
+package com.example.backend.auth.model
 
 import org.springframework.security.core.AuthenticatedPrincipal
 import org.springframework.security.core.GrantedAuthority
@@ -300,7 +322,7 @@ class CustomOAuth2User(
 
 
 <details>
-<summary> 5. AuthController.kt </summary>
+<summary> 6. AuthController.kt </summary>
 
 - 各メソッドの引数で@AuthenticationPrincipalをつけると、認証されたuser情報が取れる
 - user情報へのアクセス方法は user.getAttribute("取りたいキー")でGetできる
@@ -308,7 +330,7 @@ class CustomOAuth2User(
 ```kotlin
 package com.example.backend.controller
 
-import com.example.backend.config.model.CustomOAuth2User
+import com.example.backend.auth.model.CustomOAuth2User
 import com.example.backend.model.response.ResponceUserInfo
 import com.example.backend.service.UserService
 import org.springframework.security.core.annotation.AuthenticationPrincipal
