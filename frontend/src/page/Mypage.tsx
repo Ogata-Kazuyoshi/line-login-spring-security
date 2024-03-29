@@ -1,6 +1,6 @@
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
-import {getUserInfoRepository, updateUserInfoRepository} from "../repository/UserRepository.ts";
+import {getUserInfoRepository, logoutRepository, updateUserInfoRepository} from "../repository/UserRepository.ts";
 import {useEffect, useState} from "react";
 
 type UserInfo = {
@@ -25,6 +25,15 @@ export const Mypage = () => {
             setUser(res)
         } catch (err) {
             throw Error(`error : ${err}`)
+        }
+    }
+
+    const logoutHandler = async () => {
+        try {
+            const res = await logoutRepository()
+            console.log(res)
+        } catch (err) {
+            throw Error(` error : ${err}`)
         }
     }
 
@@ -69,5 +78,10 @@ export const Mypage = () => {
             <br/>
             <button onClick={updateInfo}>投稿</button>
         </div>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <button onClick={logoutHandler}>ログアウト</button>
     </>
 }

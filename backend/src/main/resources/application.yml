@@ -26,7 +26,7 @@ spring:
             clientId: ${LINE_CLIENT_ID}
             clientSecret: ${LINE_SECRET_ID}
             authorizationGrantType: authorization_code
-            redirectUri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirectUri: '{baseUrl}/login/oauth2/code/{registrationId}'
             scope: profile
         provider:
           line:
@@ -34,10 +34,14 @@ spring:
             tokenUri: https://api.line.me/oauth2/v2.1/token
             userInfoUri: https://api.line.me/v2/profile
             userNameAttribute: userId
-#githubは共通のOAuthプロバイダとして、SpringBootが認識するので、登録不要
-#          github:
-#            authorization-uri: https://github.com/login/oauth/authorize
-#            token-uri: https://github.com/login/oauth/access_token
-#            user-info-uri: https://api.github.com/user
+  #githubは共通のOAuthプロバイダとして、SpringBootが認識するので、登録不要
+  #          github:
+  #            authorization-uri: https://github.com/login/oauth/authorize
+  #            token-uri: https://github.com/login/oauth/access_token
+  #            user-info-uri: https://api.github.com/user
 
-#Frontendから叩く場合は、/oauth2/authorization/{registrationId}がバックエンドの認証フローをスタートさせるトリガー
+  #Frontendから叩く場合は、/oauth2/authorization/{registrationId}がバックエンドの認証フローをスタートさせるトリガー
+  server:
+    servlet:
+      session:
+        timeout: 1m

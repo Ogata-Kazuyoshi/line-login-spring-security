@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -40,6 +41,14 @@ class SecurityConfiguration (
             }
             .oauth2Login {
                 it.successHandler(authenticationSuccessHandler())
+            }
+            .logout {
+                it.logoutUrl("/logout") // ログアウトのエンドポイントを指定
+                it.logoutSuccessUrl("http://localhost:5173/front-login") // ログアウト成功後にリダイレクトするURLをフロントエンドのログインページに設定
+//                    .deleteCookies("JSESSIONID") // ログアウト時にJSESSIONIDクッキーを削除
+//                    .invalidateHttpSession(true) // ログアウト時にセッションを無効化
+//                    .clearAuthentication(true) // ログアウト時に認証情報をクリア
+//                    .permitAll()
             }
         return http.build()
     }

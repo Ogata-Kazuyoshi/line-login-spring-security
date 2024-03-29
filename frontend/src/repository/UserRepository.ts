@@ -16,3 +16,12 @@ export const updateUserInfoRepository = async (remark:string) => {
         throw Error(` error : ${err}`)
     }
 }
+
+export const logoutRepository = async () => {
+    try {
+        const res = await axios.post("http://localhost:8080/logout")
+        return res.data
+    } catch (err) {
+        throw Error(` error : ${err}`)
+    }
+}
