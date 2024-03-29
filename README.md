@@ -10,6 +10,9 @@
 - [コードの説明](#コードの説明)
   - [applicaton.yml](#applicaton.yml)
   - [SecurityConfiguration.kt](#SecurityConfiguration.kt)
+  - [LineAuthenticationSuccessHandler.kt](#LineAuthenticationSuccessHandler.kt)
+  - [CustomOAuth2User.kt](#CustomOAuth2User.kt)
+  - [AuthController.kt](#AuthController.kt)
 
 - [ChatGPT](#ChatGPT)
 
@@ -195,6 +198,142 @@ class SecurityConfiguration (
 
 </details>
 
+<details>
+<summary> 3. LineAuthenticationSuccessHandler.kt </summary>
+
+- 認証成功時に、どのサクセスハンドラーを使用するかを決定するために、各サクセスハンドラーのsupportsメソッドをAppAuthentication SuccessHandlerが呼ぶ
+- 下記のコードは、ResistrationIdがlineの場合はこのハンドラーが実行される
+- SuccessHandlerが呼ばれた時点でauthenticationにUser情報は既に入っているのでアクセスできる
+- idPによって、User情報のキーが異なるため、principalの値をターミナルに出してみて、どうすれば取れるかをチェックしながら進める
+- Lineの場合はuserIdが一意のユーザーキーになる
+- SecurityContextHolder.getContext().authenticationで@AuthenticationPrincipalで各コントローラーでuserが取れるように格納する
+- 全ての処理が終わると、フロントエンドの適切なパスにリダイレクトさせる
+
+```kotlin
+package com.example.backend.config.handler
+
+
+import com.example.backend.config.model.CustomOAuth2User
+import com.example.backend.service.UserService
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
+import org.springframework.security.oauth2.core.user.OAuth2User
+
+open class LineAuthenticationSuccessHandler(
+  val userService: UserService
+) : AppAuthenticationSuccessHandler {
+
+  override fun supports(oauth2Authentication: OAuth2AuthenticationToken): Boolean {
+    return "line" == oauth2Authentication.authorizedClientRegistrationId
+  }
+
+  override fun onAuthenticationSuccess(
+    request: HttpServletRequest?,
+    response: HttpServletResponse,
+    authentication: Authentication
+  ) {
+    val principal = authentication.principal as OAuth2User
+    val oAuth2AuthenticationToken = authentication as OAuth2AuthenticationToken
+    val oid = principal.getAttribute<String>("userId") ?: throw Exception("There is no userId")
+    val displayName = principal.getAttribute<String>("displayName") ?: throw Exception("There is no name")
+    val res = userService.getOrCreateUserService(oid=oid, name = displayName)
+    val newAuthentication = OAuth2AuthenticationToken(
+      CustomOAuth2User(
+        userId = res.id.toString(),
+        oid = oid,
+        name = displayName,
+        authorities = principal.authorities,
+      ),
+      authentication.authorities,
+      oAuth2AuthenticationToken.authorizedClientRegistrationId
+    )
+    SecurityContextHolder.getContext().authentication = newAuthentication
+    val redirectUrl = System.getenv("AFTER_AUTH_REDIRECT_URL") ?: "hogehoge"
+    response.sendRedirect(redirectUrl)
+  }
+}
+```
+
+</details>
+
+<details>
+<summary> 4. CustomOAuth2User.kt </summary>
+
+- attributesのところで、どのキーをPrincipalとして登録するかを定義する。増やしたい場合は増やせる
+
+```kotlin
+package com.example.backend.config.model
+
+import org.springframework.security.core.AuthenticatedPrincipal
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.oauth2.core.user.OAuth2User
+import java.io.Serializable
+import java.util.UUID
+
+class CustomOAuth2User(
+  private val authorities: Collection<GrantedAuthority>,
+  private val userId: String,
+  private val oid: String,
+  private val name: String,
+) : OAuth2User {
+  private val attributes: Map<String, Any> = mapOf("userId" to userId, "oid" to oid, "name" to name)
+
+  override fun getName(): String {
+    return name
+  }
+
+  override fun getAttributes(): Map<String, Any> {
+    return attributes
+  }
+
+  override fun getAuthorities(): Collection<GrantedAuthority> {
+    return authorities
+  }
+}
+
+```
+
+</details>
+
+
+<details>
+<summary> 5. AuthController.kt </summary>
+
+- 各メソッドの引数で@AuthenticationPrincipalをつけると、認証されたuser情報が取れる
+- user情報へのアクセス方法は user.getAttribute("取りたいキー")でGetできる
+
+```kotlin
+package com.example.backend.controller
+
+import com.example.backend.config.model.CustomOAuth2User
+import com.example.backend.model.response.ResponceUserInfo
+import com.example.backend.service.UserService
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+
+@RestController
+@RequestMapping("/api/auth")
+class AuthController (
+  val userService: UserService
+) {
+  @GetMapping("/check-auth")
+  fun checkAuth (
+    @AuthenticationPrincipal user: CustomOAuth2User,
+  ) {
+    println("userId : " + user.getAttribute("oid"))
+  }
+
+}
+```
+
+</details>
+
+
 # ChatGPT
 
 <details>
@@ -215,6 +354,12 @@ class SecurityConfiguration (
 
 - ![](./assets/images/auth_process1.png)
 - ![](./assets/images/auth_process2.png)
+</details>
+
+<details>
+<summary> 4. SuccessHandlerの切り替えについて</summary>
+
+- ![](./assets/images/success_handler1.png)
 </details>
 
 
