@@ -33,7 +33,7 @@ export const Mypage = () => {
             const res = await logoutRepository()
             console.log(res)
         } catch (err) {
-            throw Error(` error : ${err}`)
+           navigate("/front-login")
         }
     }
 

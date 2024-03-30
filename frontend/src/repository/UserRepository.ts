@@ -19,7 +19,7 @@ export const updateUserInfoRepository = async (remark:string) => {
 
 export const logoutRepository = async () => {
     try {
-        const res = await axios.post("http://localhost:8080/logout")
+        const res = await axios.get("http://localhost:8080/logout",{withCredentials:true})
         return res.data
     } catch (err) {
         throw Error(` error : ${err}`)
