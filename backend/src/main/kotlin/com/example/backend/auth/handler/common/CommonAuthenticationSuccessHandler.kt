@@ -24,7 +24,7 @@ abstract class CommonAuthenticationSuccessHandler(
         authentication: Authentication
     ) {
         val principal = authentication.principal as OAuth2User
-        println("clientResistrationId : $clientRegistrationId")
+        println("principal : $principal")
         val oAuth2AuthenticationToken = authentication as OAuth2AuthenticationToken
         val oid = getOid(principal)
         val displayName = getDisplayName(principal)

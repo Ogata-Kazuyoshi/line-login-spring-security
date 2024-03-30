@@ -386,4 +386,8 @@ class AuthController (
 
 
 # 参考
-- [github](https://tech.asoview.co.jp/entry/2021/12/09/000000)
+- [githubログイン実装例](https://tech.asoview.co.jp/entry/2021/12/09/000000)
+- [OAuthの説明](https://qiita.com/TakahikoKawasaki/items/e37caf50776e00e733be)
+- [Googleでログインガイドライン](https://developers.google.com/identity/branding-guidelines?fbclid=IwAR0oyedruG1mHbETsSGIh-w1cIUU7ya4y2BTXVvR1fezUuR6nAHz_H3yL2s&hl=ja)
+- [LINE DEVELOPERS 公式ドキュメント](https://developers.line.biz/ja/reference/line-login/)
+- [LINEボタンのルール](https://developers.line.biz/ja/docs/line-login/login-button/)

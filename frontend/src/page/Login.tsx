@@ -15,5 +15,11 @@ export const Login = () => {
             handleLogin("github")
         }}>githubでログイン
         </button>
+        <br/>
+        <br/>
+        <button onClick={() => {
+            handleLogin("google")
+        }}>googleでログイン
+        </button>
     </>
 }

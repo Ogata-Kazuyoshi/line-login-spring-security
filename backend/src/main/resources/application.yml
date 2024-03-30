@@ -22,6 +22,10 @@ spring:
             clientId: ${GITHUB_CLIENT_ID}
             clientSecret: ${GITHUB_SECRET_ID}
             scope: read:user
+          google:
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_SECRET_ID}
+            scope: profile
           line:
             clientId: ${LINE_CLIENT_ID}
             clientSecret: ${LINE_SECRET_ID}

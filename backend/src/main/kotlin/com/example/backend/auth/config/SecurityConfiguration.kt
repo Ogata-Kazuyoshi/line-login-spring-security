@@ -2,6 +2,7 @@ package com.example.backend.auth.config
 
 import com.example.backend.auth.handler.common.AppCustomeAuthenticationSuccessHandler
 import com.example.backend.auth.handler.provider.GithubAuthenticationSuccessHandler
+import com.example.backend.auth.handler.provider.GoogleAuthenticationSuccessHandler
 import com.example.backend.auth.handler.provider.LineAuthenticationSuccessHandler
 import com.example.backend.service.UserService
 import org.springframework.context.annotation.Bean
@@ -24,7 +25,8 @@ class SecurityConfiguration (
         return AppCustomeAuthenticationSuccessHandler(
             listOf(
                 LineAuthenticationSuccessHandler(userService),
-                GithubAuthenticationSuccessHandler(userService)
+                GithubAuthenticationSuccessHandler(userService),
+                GoogleAuthenticationSuccessHandler(userService)
             )
         )
     }
