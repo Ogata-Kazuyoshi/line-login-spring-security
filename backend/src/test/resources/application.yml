@@ -1,0 +1,48 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL
+    #    url: jdbc:postgresql://localhost:5433/pitbull_dev
+    driver-class-name: org.h2.Driver
+    #    driver-class-name: org.postgresql.Driver
+    username: admin
+    password: admin
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    show-sql: true
+    generate-ddl: true
+  h2:
+    console:
+      enabled: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: ${GITHUB_CLIENT_ID}
+            clientSecret: ${GITHUB_SECRET_ID}
+            scope: read:user
+          google:
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_SECRET_ID}
+            scope: profile
+          line:
+            clientId: ${LINE_CLIENT_ID}
+            clientSecret: ${LINE_SECRET_ID}
+            authorizationGrantType: authorization_code
+            redirectUri: '{baseUrl}/login/oauth2/code/{registrationId}'
+            scope: profile
+        provider:
+          line:
+            authorizationUri: https://access.line.me/oauth2/v2.1/authorize
+            tokenUri: https://api.line.me/oauth2/v2.1/token
+            userInfoUri: https://api.line.me/v2/profile
+            userNameAttribute: userId
+  #githubは共通のOAuthプロバイダとして、SpringBootが認識するので、登録不要
+  #          github:
+  #            authorization-uri: https://github.com/login/oauth/authorize
+  #            token-uri: https://github.com/login/oauth/access_token
+  #            user-info-uri: https://api.github.com/user
+
+  #Frontendから叩く場合は、/oauth2/authorization/{registrationId}がバックエンドの認証フローをスタートさせるトリガー
+
