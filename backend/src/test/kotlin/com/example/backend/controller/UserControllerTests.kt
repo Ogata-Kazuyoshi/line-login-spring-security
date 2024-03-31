@@ -1,53 +1,85 @@
 package com.example.backend.controller
 
 import com.example.backend.auth.model.CustomOAuth2User
+import com.example.backend.model.response.ResponceUserInfo
 import com.example.backend.service.UserService
-import com.example.backend.service.UserServiceImpl
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
-import org.junit.jupiter.api.BeforeEach
+import com.example.backend.util.oauth2LoginWithUser
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.Mockito
+import org.mockito.Mockito.doNothing
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
-import org.springframework.security.test.context.support.WithMockUser
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication
+import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.*
 
-@WebMvcTest(UserController::class)
-class UserControllerTests(@Autowired val mockMvc: MockMvc) {
+@SpringBootTest
+@AutoConfigureMockMvc
+class UserControllerTests() {
+
+    @Autowired
+    private lateinit var mockMvc: MockMvc
 
     @MockBean
-    private lateinit var userService: UserService
+    private lateinit var service: UserService
 
-    private lateinit var customUser: CustomOAuth2User
-    private lateinit var authentication: OAuth2AuthenticationToken
+    @Test
+    fun `Getメソッドでアクセスするとサービス層のgetUserInfoメソッドを正しい引数で呼ぶ`() {
+        Mockito.`when`(service.getUserInfo(any())).thenReturn(ResponceUserInfo())
 
-    @BeforeEach
-    fun setUp() {
-        customUser = mockk<CustomOAuth2User>()
-        authentication = mockk<OAuth2AuthenticationToken>()
+        val testUser = CustomOAuth2User(
+            authorities = listOf(),
+            userId = "12345678-1234-1234-1234-123456789012",
+            oid = "test-oid",
+            name = "test-user-name",
+        )
 
-        every { customUser.getAttribute<String>("oid") } returns "testOid"
-        every { authentication.principal } returns customUser
-        every { authentication.isAuthenticated } returns true
-        every { authentication.getName() } returns "testName"
+        // when
+        mockMvc.perform(
+            get("/api/users")
+                .with(oauth2LoginWithUser(testUser))
+        ).andExpect(status().isOk)
+
+        // then
+        Mockito.verify(service).getUserInfo("test-oid")
+
     }
 
     @Test
-    @WithMockUser
-    fun `getUserInfo endpoint should call userService with correct arguments`() {
-//        every { userService.getUserInfo(oid = "testOid") } returns null // 期待される動作をモック
+    fun `Postメソッドでアクセスするとサービス層のupdateUserInfoメソッドを正しい引数で呼ぶ`() {
 
-        mockMvc.perform(get("/api/users")
-            .with(authentication(authentication)))
-            .andExpect(status().isOk)
+        doNothing().`when`(service).updateUserInfo(anyString(), anyString())
 
-        // userService.getUserInfoが期待通りの引数で呼び出されたことを検証
-        verify { userService }
+        val testUser = CustomOAuth2User(
+            authorities = listOf(),
+            userId = "12345678-1234-1234-1234-123456789012",
+            oid = "test-oid",
+            name = "test-user-name",
+        )
+
+        // when
+        mockMvc.perform(
+            post("/api/users")
+                .with(oauth2LoginWithUser(testUser))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                        {
+                            "remark" : "test-update"
+                        }
+                    """
+                )
+        ).andExpect(status().isOk)
+
+        // then
+        Mockito.verify(service).updateUserInfo("test-oid","test-update")
+
     }
 }
