@@ -22,6 +22,13 @@ class GoogleAuthenticationSuccessHandlerTests {
     }
 
     @Test
+    fun `clientResistrationedIdがgoogleであること` () {
+        val resistrationedId = googleAuth.getClientRegistrationId()
+
+        assertEquals("google",resistrationedId)
+    }
+
+    @Test
     fun `getOidメソッドは正しい引数でgetAttributeを呼んでいて、正しい値を返す`(){
         every { principal.getAttribute<String>(any()) } returns "hogehoge"
 

@@ -44,6 +44,8 @@ abstract class CommonAuthenticationSuccessHandler(
         response.sendRedirect(redirectUrl)
     }
 
+    fun getClientRegistrationId():String = clientRegistrationId
+
     abstract fun getOid(principal: OAuth2User): String
     abstract fun getDisplayName(principal: OAuth2User): String
 }

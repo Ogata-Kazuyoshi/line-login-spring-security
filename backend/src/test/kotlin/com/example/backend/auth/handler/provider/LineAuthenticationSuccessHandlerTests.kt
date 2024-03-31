@@ -22,6 +22,13 @@ class LineAuthenticationSuccessHandlerTests {
     }
 
     @Test
+    fun `clientResistrationedIdがlineであること` () {
+        val resistrationedId = lineAuth.getClientRegistrationId()
+
+        assertEquals("line",resistrationedId)
+    }
+
+    @Test
     fun `getOidメソッドは正しい引数でgetAttributeを呼んでいて、正しい値を返す`(){
         every { principal.getAttribute<String>(any()) } returns "hogehoge"
 
