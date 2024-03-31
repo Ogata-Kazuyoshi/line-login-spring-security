@@ -204,6 +204,7 @@ class SecurityConfiguration (
 - 認証成功時に、どのサクセスハンドラーを使用するかを決定するために、各サクセスハンドラーのsupportsメソッドをAppAuthentication SuccessHandlerが呼ぶ。lineやgithubを決める
 - getOidやgetDisplayNameなど各プロバイダごとでアクセスするキーが変わるものは abstract関数にしておいて、継承先でのoverrideを強制する
 - 認証プロセス終了時に自動で、①supporsメソッド→②onAuthenticationSuccessが呼ばれる
+- 「SecurityContextHolder.getContext().authentication = newAuthentication」の行で、認証後のuser情報を登録して、@AuthenticationPrincipalでアクセスできるようになる。
 
 
 ```kotlin
