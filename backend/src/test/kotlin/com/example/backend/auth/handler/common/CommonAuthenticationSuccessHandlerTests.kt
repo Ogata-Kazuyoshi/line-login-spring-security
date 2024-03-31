@@ -34,7 +34,6 @@ class CommonAuthenticationSuccessHandlerTests {
         userService = mockk()
         request = mockk(relaxed = true) //(relaxed = trueと設定すると未スタブの関数は実物が提供される)
         response = mockk(relaxed = true)
-//        authentication = mockk()
         oAuth2User = mockk()
         oAuth2AuthenticationToken = mockk()
 
