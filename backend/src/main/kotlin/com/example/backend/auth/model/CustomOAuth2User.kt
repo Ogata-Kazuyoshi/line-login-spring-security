@@ -12,6 +12,10 @@ class CustomOAuth2User(
 ) : OAuth2User {
     private val attributes: Map<String, Any> = mapOf("userId" to userId, "oid" to oid, "name" to name)
 
+    fun getOid () : String {
+        return oid
+    }
+
     override fun getName(): String {
         return name
     }

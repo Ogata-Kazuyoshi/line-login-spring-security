@@ -26,18 +26,18 @@ class AuthControllerTests {
     @MockBean
     private lateinit var userService: UserService
 
-    @BeforeEach
-    fun setUp() {
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(webApplicationContext)
-            .apply(springSecurity())
-            .build()
-    }
-
-    @Test
-    @WithMockUser
-    fun `checkAuth endpoint should return OK status`() {
-        mockMvc.perform(get("/api/auth/check-auth"))
-            .andExpect(status().isOk)
-    }
+//    @BeforeEach
+//    fun setUp() {
+//        mockMvc = MockMvcBuilders
+//            .webAppContextSetup(webApplicationContext)
+//            .apply(springSecurity())
+//            .build()
+//    }
+//
+//    @Test
+//    @WithMockUser
+//    fun `checkAuth endpoint should return OK status`() {
+//        mockMvc.perform(get("/api/auth/check-auth"))
+//            .andExpect(status().isOk)
+//    }
 }

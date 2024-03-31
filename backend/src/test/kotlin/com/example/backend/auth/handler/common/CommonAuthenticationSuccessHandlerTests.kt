@@ -3,9 +3,7 @@ package com.example.backend.auth.handler.common
 import com.example.backend.auth.model.CustomOAuth2User
 import com.example.backend.model.response.ResponceUserInfo
 import com.example.backend.service.UserService
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.junit.jupiter.api.Assertions.*
@@ -26,13 +24,15 @@ class CommonAuthenticationSuccessHandlerTests {
     private lateinit var oAuth2User: OAuth2User
     private lateinit var oAuth2AuthenticationToken: OAuth2AuthenticationToken
     private lateinit var handler: CommonAuthenticationSuccessHandler
-    private lateinit var principal: OAuth2User
-    private lateinit var securityContext: SecurityContext
+
 
     @BeforeEach
     fun setUp() {
+        // SecurityContextHolderの静的メソッドをモック化
+        mockkStatic(SecurityContextHolder::class)
+
         userService = mockk()
-        request = mockk(relaxed = true)
+        request = mockk(relaxed = true) //(relaxed = trueと設定すると未スタブの関数は実物が提供される)
         response = mockk(relaxed = true)
 //        authentication = mockk()
         oAuth2User = mockk()
@@ -46,13 +46,6 @@ class CommonAuthenticationSuccessHandlerTests {
 
         // OAuth2AuthenticationTokenのgetAuthoritiesメソッドの振る舞いを定義
         every { authentication.getAuthorities() } returns emptyList()
-
-//securityContextHolderへのセットを保証するテスト用。うまく行ってない
-//        principal = mockk()
-//        securityContext = mockk()
-//
-//        // SecurityContextHolderをモック化
-//        SecurityContextHolder.setContext(securityContext)
 
         handler = object : CommonAuthenticationSuccessHandler(userService, "testClient") {
             override fun getOid(principal: OAuth2User): String = "testOid"
@@ -95,6 +88,47 @@ class CommonAuthenticationSuccessHandlerTests {
             handler.onAuthenticationSuccess(request, response, authentication)
 
             verify { userService.getOrCreateUserService("testOid","testDisplayName") }
+        }
+
+        @Test
+        fun `SecurityContextHolderに正しい値をセットしていること`() {
+            // SecurityContextとSecurityContextHolderをモック化
+            val securityContextMock = mockk<SecurityContext>(relaxed = true)
+            val authenticationSlot = slot<Authentication>()
+            every { SecurityContextHolder.getContext() } returns securityContextMock
+            every { securityContextMock.setAuthentication(capture(authenticationSlot)) } answers { Unit }
+
+            // テスト対象メソッドの実行前の準備
+            every { authentication.principal } returns oAuth2User
+            every { (authentication as OAuth2AuthenticationToken).authorizedClientRegistrationId } returns "testClient"
+            every { userService.getOrCreateUserService(any(), any()) } returns ResponceUserInfo()
+            every { response.sendRedirect(any()) } returns Unit
+
+            // テスト対象メソッドの実行
+            handler.onAuthenticationSuccess(request, response, authentication)
+
+            // SecurityContextにセットされたAuthenticationが期待する値であるか検証
+            verify { securityContextMock.setAuthentication(capture(authenticationSlot)) }
+            val capturedAuthentication = authenticationSlot.captured
+            assertTrue(capturedAuthentication is OAuth2AuthenticationToken)
+            val customOAuth2User = (capturedAuthentication.principal as? CustomOAuth2User)
+            assertNotNull(customOAuth2User)
+            assertEquals("testOid", customOAuth2User?.getOid())
+            assertEquals("testDisplayName", customOAuth2User?.name)
+        }
+
+        @Test
+        fun `onAuthenticationSuccess redirects to the correct URL`() {
+            every { authentication.principal } returns oAuth2User
+            every { (authentication as OAuth2AuthenticationToken).authorizedClientRegistrationId } returns "testClient"
+            every { userService.getOrCreateUserService(any(), any()) } returns ResponceUserInfo()
+            every { response.sendRedirect(any()) } returns Unit
+
+            // テスト対象メソッドの実行
+            handler.onAuthenticationSuccess(request, response, authentication)
+
+            // リダイレクトされたURLが期待する値であるか検証
+            verify { response.sendRedirect("hogehoge") }
         }
     }
 

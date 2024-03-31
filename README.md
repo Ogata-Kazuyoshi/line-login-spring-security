@@ -384,6 +384,20 @@ class AuthController (
 - ![](./assets/images/success_handler1.png)
 </details>
 
+<details>
+<summary> 5. mockkのrelaxed = true について</summary>
+
+- ![](./assets/images/mockk_relaxed.png)
+</details>
+
+<details>
+<summary> 6. slot / capture でメソッド呼び出しで渡された引数をキャプチャーする</summary>
+
+- ![](./assets/images/mockk_slot_capture1.png)
+- ![](./assets/images/mockk_slot_capture2.png)
+- ![](./assets/images/mockk_slot_capture3.png)
+</details>
+
 
 # 参考
 - [githubログイン実装例](https://tech.asoview.co.jp/entry/2021/12/09/000000)
