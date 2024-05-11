@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 @EnableWebSecurity
@@ -34,7 +35,7 @@ class SecurityConfiguration (
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .csrf().disable()
+//            .csrf().disable()
             .authorizeHttpRequests {
                 it.requestMatchers("/api/**")
                     .authenticated()
@@ -52,6 +53,9 @@ class SecurityConfiguration (
 //                    .clearAuthentication(true) // ログアウト時に認証情報をクリア
 //                    .permitAll()
             }
+        http.csrf {
+            it.csrfTokenRepository(HttpSessionCsrfTokenRepository())
+        }
         return http.build()
     }
 }

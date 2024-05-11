@@ -19,6 +19,8 @@
 
 - [参考](#参考)
 
+- [curlコマンド](#curlコマンド)
+
 </details>
 
 # 環境セットアップ
@@ -406,3 +408,72 @@ class AuthController (
 - [Googleでログインガイドライン](https://developers.google.com/identity/branding-guidelines?fbclid=IwAR0oyedruG1mHbETsSGIh-w1cIUU7ya4y2BTXVvR1fezUuR6nAHz_H3yL2s&hl=ja)
 - [LINE DEVELOPERS 公式ドキュメント](https://developers.line.biz/ja/reference/line-login/)
 - [LINEボタンのルール](https://developers.line.biz/ja/docs/line-login/login-button/)
+
+# curlコマンド
+
+<details>
+<summary> 1. ログイン時のクッキに関して</summary>
+
+- curlコマンドで/oauth2/authorization/lineでバックエンドのエンドポイントを叩いても、その後、プロバイダーに飛ばされる
+- プロバイダーとバックエンドで認証のために数往復してようやく認証できるのでcurlコマンドからではoauth認証を実施することは無理
+- まずブラウザでログインしてから、SpringSecurityがフロントに返すセッションをcookieとしてフロントは保持するので下記のJSESSIONIDをメモする
+- ![](./assets/images/curl1.png)
+</details>
+
+<details>
+<summary> 2. 上記のクッキーを含めてcurlコマンドでバックエンドのエンドポイントを叩く</summary>
+
+- cookieも含めてエンドポイントを叩く
+
+```zh
+curl -X GET http://localhost:8080/api/users -v --cookie "JSESSIONID=あなたのクッキー値" 
+```
+
+- ![](./assets/images/curl2.png)
+</details>
+
+<details>
+<summary> 3. postメソッドなどはheaderにcsrfTokenが必要</summary>
+
+- csrfを有効にしている場合は、post,put,deleteメソッドでのリクエストではヘッダーにCsrfTokenが必要になる
+- そのため、まず、csrfをGetできるエンドポイントにアクセスをしてトークンを返してもらってから、そのトークンを使用してヘッダーに付与したリクエストにする
+
+```zh
+   curl -X GET http://localhost:8080/api/csrf -v --cookie "JSESSIONID=あなたのクッキーの値"
+```
+
+```zh
+  curl -X POST "http://localhost:8080/api/users/test" --cookie "JSESSIONID=あなたのクッキーの値" \
+     -H "Content-Type: application/json" \
+     -H "X-CSRF-TOKEN: 事前に取得したcsrfToken" \
+     -d '{"bodyParam1": "test150", "bodyParam2": "test200"}'     
+```
+
+- ![](./assets/images/curl3.png)
+- ![](./assets/images/curl4.png)
+</details>
+
+<details>
+<summary> 4. パスパラメーターやクエリパラメーターは普通にリクエストでつけたらOK</summary>
+
+- クエリパラメーターの場合は下記
+
+```zh
+ curl -X DELETE POST "http://localhost:8080/api/users/test?id=2" --cookie "JSESSIONID=2759A5010B733521EE961E5093A6E4E8" \ 
+     -H "X-CSRF-TOKEN: tT00tnxm8pSs7bgDmFHNcxIeCeZNX3z-jPCFEucDokcO6f26hAsHjk4Fy6CB3oo1_Hz5SyZ_JIcsb0jTtcbncIE2k39vjM2P"
+```
+
+
+
+- パスパラメーターの場合は下記
+
+```zh
+ curl -X DELETE "http://localhost:8080/api/users/test/345" --cookie "JSESSIONID=028E2504BC9DE60F5C973529A9D33563" \ 
+     -H "X-CSRF-TOKEN: Ix88loHKGd4tWDfziyQmwmwpwnhrN8mCQJOe5UsRCwRjidBrQC4KoLioLuYAPVXE6AkS9V0R70FZVf-vI_H_gXIoPTcBv-EP" 
+```
+
+
+- ![](./assets/images/curl5.png)
+- ![](./assets/images/curl6.png)
+</details>
+
